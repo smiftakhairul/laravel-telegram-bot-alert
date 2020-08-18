@@ -20,4 +20,3 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('home', 'HomeController@index')->name('home');
-Route::get('monitor', 'MonitorController@index')->name('monitor.index');
