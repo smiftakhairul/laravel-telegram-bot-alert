@@ -7,6 +7,7 @@ use App\Http\Responses\CustomAPIResponse;
 use App\Models\TelegramBotLog;
 use App\Services\MonitorService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Exception;
@@ -55,6 +56,49 @@ class MonitorController extends Controller
 
             if (!empty($message)) {
                 $response = $this->pushTelegramMessage($request, $telegramChatId, $message);
+            }
+        } catch (Exception $exception) {
+            $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
+            $error .= $exception->getMessage();
+            Log::error('CheckDomain: ' . $error);
+            $response = $error;
+        }
+
+        return response()->json($response);
+    }
+
+    public function checkDb(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'telegram_chat_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($this->apiResponse->customErrorResponse($validator->errors(), false));
+        }
+
+        $response = null;
+
+        try {
+            $telegramChatId = $request->input('telegram_chat_id');
+
+            $logs = DB::select('SHOW FULL PROCESSLIST');
+            $min_items = config('monitor.min_processlist_item');
+
+            if (count($logs) >= $min_items) {
+                $active = 0; $sleep = 0;
+                foreach ($logs as $log) {
+                    if ($log->Command == strtoupper('SLEEP')) {
+                        $sleep++;
+                    } else {
+                        $active++;
+                    }
+                }
+
+                $message = "PROCESSLIST COMMAND COUNT `active`: $active\nPROCESSLIST COMMAND COUNT `sleep`: $sleep";
+                if (!empty($message)) {
+                    $response = $this->pushTelegramMessage($request, $telegramChatId, $message);
+                }
             }
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';

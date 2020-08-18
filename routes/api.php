@@ -21,4 +21,5 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::middleware('monitor.api.key')
     ->namespace('API')->name('monitor.')->prefix('monitor')->group(function () {
     Route::post('check-domain', 'MonitorController@checkDomain')->name('check-domain');
+    Route::post('check-db', 'MonitorController@checkDb')->name('check-db');
 });
