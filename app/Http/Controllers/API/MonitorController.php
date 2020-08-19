@@ -83,7 +83,8 @@ class MonitorController extends Controller
             $telegramChatId = $request->input('telegram_chat_id');
 
             $logs = DB::select('SHOW FULL PROCESSLIST');
-            $min_items = config('monitor.min_processlist_item');
+            $min_items = ($request->has('min_processlist_item') && !empty($request->input('min_processlist_item')))
+                ? $request->input('min_processlist_item') : config('monitor.min_processlist_item');
 
             if (count($logs) >= $min_items) {
                 $active = 0; $sleep = 0;

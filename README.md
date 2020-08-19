@@ -46,6 +46,7 @@ $response = Http::post('www.example.com/api/monitor/check-domain', [
 $response = Http::post('www.example.com/api/monitor/check-db', [
     'api_key' => 'your-api-key',
     'telegram_chat_id' => 123456,
+    'min_processlist_item' => 5, // Optional
     'telegram_bot_token' => 'token', // Optional
 ]);
 ```
