@@ -26,18 +26,19 @@ TELEGRAM_BOT_TOKEN=telegram-bot-token
 ### Usage
 There are two api's  
 **POST**: [www.example.com/api/monitor/check-domain](#)  
-**POST**: [www.example.com/api/monitor/check-db](#)
+**POST**: [www.example.com/api/monitor/check-db](#)  
+**POST**: [www.example.com/api/monitor/check-directory](#)
 
 ##### Example of */api/monitor/check-domain*
 ```php
 $response = Http::post('www.example.com/api/monitor/check-domain', [
     'api_key' => 'your-api-key',
-    'telegram_chat_id' => 123456,
+    'telegram_chat_id' => [11111, 22222],
     'telegram_bot_token' => 'token', // Optional
     'domain_list' => [
         ['domain' => 'www.google.com', 'port' => 80],
         ['domain' => 'www.example.com', 'port' => 800],
-    ]
+    ],
 ]);
 ```
 
@@ -45,9 +46,21 @@ $response = Http::post('www.example.com/api/monitor/check-domain', [
 ```php
 $response = Http::post('www.example.com/api/monitor/check-db', [
     'api_key' => 'your-api-key',
-    'telegram_chat_id' => 123456,
+    'telegram_chat_id' => [11111, 22222],
     'min_processlist_item' => 5, // Optional
     'telegram_bot_token' => 'token', // Optional
+]);
+```
+
+##### Example of */api/monitor/check-directory*
+```php
+$response = Http::post('www.example.com/api/monitor/check-directory', [
+    'api_key' => 'your-api-key',
+    'telegram_chat_id' => [11111, 22222],
+    'telegram_bot_token' => 'token', // Optional
+    'directory_list' => [
+        '/var/www/html', '/home', 'D:'
+    ],
 ]);
 ```
 
