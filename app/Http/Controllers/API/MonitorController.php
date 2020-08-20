@@ -30,7 +30,7 @@ class MonitorController extends Controller
     public function checkDomain(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'telegram_chat_id' => 'required',
+            'telegram_chat_id' => 'required|array',
             'domain_list' => 'required|array',
             'domain_list.*.domain' => 'required',
             'domain_list.*.port' => 'required',
@@ -70,7 +70,7 @@ class MonitorController extends Controller
     public function checkDb(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'telegram_chat_id' => 'required',
+            'telegram_chat_id' => 'required|array',
         ]);
 
         if ($validator->fails()) {
@@ -111,29 +111,32 @@ class MonitorController extends Controller
         return response()->json($response);
     }
 
-    protected function pushTelegramMessage(Request $request, $telegramChatId, $message)
+    protected function pushTelegramMessage(Request $request, array $telegramChatIds, $message)
     {
-        $response = null;
+        $response = [];
         $telegramBotToken = null;
 
-        try {
-            $telegramBotToken = ($request->has('telegram_bot_token') && !empty($request->input('telegram_bot_token')))
-                ? $request->input('telegram_bot_token') : $this->telegramBotToken;
+        $telegramBotToken = ($request->has('telegram_bot_token') && !empty($request->input('telegram_bot_token')))
+            ? $request->input('telegram_bot_token') : $this->telegramBotToken;
 
-            $telegram = new TelegramBot($telegramBotToken);
+        foreach ($telegramChatIds as $telegramChatId) {
+            try {
+                $telegram = new TelegramBot($telegramBotToken);
 
-            $response = $telegram->sendMessage([
-                'chat_id' => $telegramChatId,
-                'text' => $message,
-            ]);
-        } catch (Exception $exception) {
-            $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
-            $error .= $exception->getMessage();
-            Log::error('PushTelegramMessage: ' . $error);
-            $response = $error;
+                $res = $telegram->sendMessage([
+                    'chat_id' => $telegramChatId,
+                    'text' => $message,
+                ]);
+            } catch (Exception $exception) {
+                $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
+                $error .= $exception->getMessage();
+                Log::error('PushTelegramMessage: ' . $error);
+                $res = $error;
+            }
+
+            $this->generateTelegramBotLog($telegramBotToken, $telegramChatId, $message, $res);
+            $response[] = $res;
         }
-
-        $this->generateTelegramBotLog($telegramBotToken, $telegramChatId, $message, $response);
 
         return $response;
     }
