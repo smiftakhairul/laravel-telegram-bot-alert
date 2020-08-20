@@ -28,7 +28,7 @@ TELEGRAM_BOT_TOKEN=telegram-bot-token
 - Set `TELEGRAM_BOT_TOKEN`. You can create BOT from [here](https://t.me/botfather)
 
 ### Usage
-Provided API's  
+Provided API's:  
 **POST**: [www.example.com/api/monitor/send-message](#)  
 **POST**: [www.example.com/api/monitor/check-domain](#)  
 **POST**: [www.example.com/api/monitor/check-db](#)  
