@@ -57,7 +57,7 @@ class MonitorService
         return $message;
     }
 
-    public function getSpaceStatus($drive)
+    public function getSpaceStatus($drive, $max_alloc_limit = 70)
     {
         $server_time = date('Y-m-d h:i:s');
 
@@ -68,8 +68,9 @@ class MonitorService
                 $freespace = disk_free_space($drive);
                 $total_space = disk_total_space($drive);
                 $percentage_free = $freespace ? round($freespace / $total_space, 2) * 100 : 0;
+                $percentage_used = (100 - $percentage_free);
 
-                $response['status'] = 'OK';
+                $response['status'] = $percentage_used <= $max_alloc_limit ? 'OK' : 'FAILED';
 
                 if ($freespace < 1073741824) {
                     $response['message'] = "Drive: $drive\nFree Space: " . round($freespace / 1024 / 1024) . " MB\nPercentage: " . $percentage_free . " %\nTime: " . $server_time;

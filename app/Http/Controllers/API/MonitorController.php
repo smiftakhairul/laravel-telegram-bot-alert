@@ -128,6 +128,7 @@ class MonitorController extends Controller
         $validator = Validator::make($request->all(), [
             'telegram_chat_id' => 'required|array',
             'directory_list' => 'required|array',
+            'max_alloc_space_percent' => 'integer',
         ]);
 
         if ($validator->fails()) {
@@ -141,11 +142,15 @@ class MonitorController extends Controller
         try {
             $directoryList = $request->input('directory_list');
             $telegramChatId = $request->input('telegram_chat_id');
+            $max_alloc = ($request->has('max_alloc_space_percent') && !empty($request->input('max_alloc_space_percent')))
+                ? $request->input('max_alloc_space_percent') : config('monitor.max_space_alloc_percent');
 
             $message = '';
             foreach ($directoryList as $dir) {
-                $spaceStatus = $this->monitorService->getSpaceStatus($dir);
-                $message .= $spaceStatus['message'] . "\n\n";
+                $spaceStatus = $this->monitorService->getSpaceStatus($dir, $max_alloc);
+                if ($spaceStatus['status'] == 'FAILED') {
+                    $message .= $spaceStatus['message'] . "\n\n";
+                }
             }
 
             if (!empty($message)) {
