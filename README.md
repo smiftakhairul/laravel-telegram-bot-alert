@@ -16,11 +16,13 @@ cp .env.example .env
 Some configuration need to be updated in the environment `.env` file.
 ```php
 API_KEY=your-api-key
+TELEGRAM_CHAT_ID=11111,22222
 PROCESSLIST_ITEM_MIN=5
 SPACE_ALLOC_PERCENT_MAX=70
 TELEGRAM_BOT_TOKEN=telegram-bot-token
 ```
 - Set an `API_KEY` for your project to validate every request.
+- Set multiple `TELEGRAM_CHAT_ID` with comma separated, just use id without comma for single.
 - Set a minimum limit of Database `PROCESSLIST_ITEM_MIN` by which system can determine whether to send bot alert message or not.
 - Set `SPACE_ALLOC_PERCENT_MAX` by which system can determine whether drive space is used more that it and send bot alert message.
 - Set `TELEGRAM_BOT_TOKEN`. You can create BOT from [here](https://t.me/botfather)
@@ -35,7 +37,7 @@ There are two api's
 ```php
 $response = Http::post('www.example.com/api/monitor/check-domain', [
     'api_key' => 'your-api-key',
-    'telegram_chat_id' => [11111, 22222],
+    'telegram_chat_id' => [11111, 22222], // Optional
     'telegram_bot_token' => 'token', // Optional
     'domain_list' => [
         ['domain' => 'www.google.com', 'port' => 80],
@@ -48,7 +50,7 @@ $response = Http::post('www.example.com/api/monitor/check-domain', [
 ```php
 $response = Http::post('www.example.com/api/monitor/check-db', [
     'api_key' => 'your-api-key',
-    'telegram_chat_id' => [11111, 22222],
+    'telegram_chat_id' => [11111, 22222], // Optional
     'min_processlist_item' => 5, // Optional
     'telegram_bot_token' => 'token', // Optional
 ]);
@@ -58,7 +60,7 @@ $response = Http::post('www.example.com/api/monitor/check-db', [
 ```php
 $response = Http::post('www.example.com/api/monitor/check-directory', [
     'api_key' => 'your-api-key',
-    'telegram_chat_id' => [11111, 22222],
+    'telegram_chat_id' => [11111, 22222], // Optional
     'telegram_bot_token' => 'token', // Optional
     'directory_list' => [
         '/var/www/html', '/home', 'D:'
