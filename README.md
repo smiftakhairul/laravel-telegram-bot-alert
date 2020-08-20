@@ -20,6 +20,7 @@ TELEGRAM_CHAT_ID=11111,22222
 PROCESSLIST_ITEM_MIN=5
 SPACE_ALLOC_PERCENT_MAX=70
 TELEGRAM_BOT_TOKEN=telegram-bot-token
+ENABLE_MONITOR_LOG=true
 ```
 - Set an `API_KEY` for your project to validate every request.
 - Set multiple `TELEGRAM_CHAT_ID` with comma separated, just use id without comma for single.
