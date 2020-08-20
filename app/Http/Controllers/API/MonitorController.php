@@ -20,6 +20,9 @@ class MonitorController extends Controller
     private $monitorService;
     private $telegramBotToken;
 
+    /**
+     * MonitorController constructor.
+     */
     public function __construct()
     {
         $this->apiResponse = new CustomAPIResponse();
@@ -27,6 +30,10 @@ class MonitorController extends Controller
         $this->telegramBotToken = config('telegram.bots.mybot.token');
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function checkDomain(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -67,6 +74,10 @@ class MonitorController extends Controller
         return response()->json($response);
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function checkDb(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -104,13 +115,58 @@ class MonitorController extends Controller
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();
-            Log::error('CheckDomain: ' . $error);
+            Log::error('CheckDB: ' . $error);
             $response = $error;
         }
 
         return response()->json($response);
     }
 
+
+    public function checkDirectory(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'telegram_chat_id' => 'required|array',
+            'directory_list' => 'required|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($this->apiResponse->customErrorResponse($validator->errors(), false));
+        }
+
+        date_default_timezone_set('Asia/Dhaka');
+
+        $response = null;
+
+        try {
+            $directoryList = $request->input('directory_list');
+            $telegramChatId = $request->input('telegram_chat_id');
+
+            $message = '';
+            foreach ($directoryList as $dir) {
+                $spaceStatus = $this->monitorService->getSpaceStatus($dir);
+                $message .= $spaceStatus['message'] . "\n\n";
+            }
+
+            if (!empty($message)) {
+                $response = $this->pushTelegramMessage($request, $telegramChatId, $message);
+            }
+        } catch (Exception $exception) {
+            $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
+            $error .= $exception->getMessage();
+            Log::error('CheckSpaceStatus: ' . $error);
+            $response = $error;
+        }
+
+        return response()->json($response);
+    }
+
+    /**
+     * @param Request $request
+     * @param array $telegramChatIds
+     * @param $message
+     * @return array
+     */
     protected function pushTelegramMessage(Request $request, array $telegramChatIds, $message)
     {
         $response = [];
@@ -141,6 +197,12 @@ class MonitorController extends Controller
         return $response;
     }
 
+    /**
+     * @param $telegramBotToken
+     * @param $telegramChatId
+     * @param $message
+     * @param array $response
+     */
     protected function generateTelegramBotLog($telegramBotToken, $telegramChatId, $message, $response = [])
     {
         try {

@@ -56,4 +56,37 @@ class MonitorService
 
         return $message;
     }
+
+    public function getSpaceStatus($drive)
+    {
+        $server_time = date('Y-m-d h:i:s');
+
+        $response = [];
+
+        if (!empty($drive)) {
+            if (is_dir($drive)) {
+                $freespace = disk_free_space($drive);
+                $total_space = disk_total_space($drive);
+                $percentage_free = $freespace ? round($freespace / $total_space, 2) * 100 : 0;
+
+                $response['status'] = 'OK';
+
+                if ($freespace < 1073741824) {
+                    $response['message'] = "Drive: $drive\nFree Space: " . round($freespace / 1024 / 1024) . " MB\nPercentage: " . $percentage_free . " %\nTime: " . $server_time;
+                } else {
+                    $response['message'] = "Drive: $drive\nFree Space: " . round($freespace / 1024 / 1024 / 1024) . " GB\nPercentage: " . $percentage_free . " %\nTime: " . $server_time;
+                }
+
+            } else {
+                $response['status'] = 'FAILED';
+                $response['message'] = "Drive: $drive\nInvalid Directory.";
+            }
+
+        } else {
+            $response['status'] = 'FAILED';
+            $response['message'] = "Drive: $drive\nDirectory Path is not declared.";
+        }
+
+        return $response;
+    }
 }
