@@ -53,8 +53,8 @@
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="94">
-                <caret line="19" column="22" lean-forward="true" selection-start-line="19" selection-start-column="22" selection-end-line="19" selection-end-column="22" />
+              <first_editor relative-caret-position="179">
+                <caret line="80" column="3" lean-forward="true" selection-start-line="80" selection-start-column="3" selection-end-line="80" selection-end-column="3" />
               </first_editor>
               <second_editor />
             </state>
@@ -325,12 +325,12 @@
       <workItem from="1597722867343" duration="25679000" />
       <workItem from="1597812296975" duration="6093000" />
       <workItem from="1597894489004" duration="6718000" />
-      <workItem from="1597907470496" duration="3891000" />
+      <workItem from="1597907470496" duration="4509000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="42381000" />
+    <option name="totallyTimeSpent" value="42999000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="754" extended-state="6" />
@@ -579,8 +579,8 @@
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="94">
-            <caret line="19" column="22" lean-forward="true" selection-start-line="19" selection-start-column="22" selection-end-line="19" selection-end-column="22" />
+          <first_editor relative-caret-position="179">
+            <caret line="80" column="3" lean-forward="true" selection-start-line="80" selection-start-column="3" selection-end-line="80" selection-end-column="3" />
           </first_editor>
           <second_editor />
         </state>
