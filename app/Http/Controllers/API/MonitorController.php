@@ -256,12 +256,15 @@ class MonitorController extends Controller
     protected function generateTelegramBotLog($telegramBotToken, $telegramChatId, $message, $response = [])
     {
         try {
-            TelegramBotLog::create([
-                'bot_token' => $telegramBotToken,
-                'chat_id' => $telegramChatId,
-                'message' => $message,
-                'response' => json_encode($response)
-            ]);
+            $monitor_log_enabled = config('monitor.monitor_log_enabled');
+            if ($monitor_log_enabled) {
+                TelegramBotLog::create([
+                    'bot_token' => $telegramBotToken,
+                    'chat_id' => $telegramChatId,
+                    'message' => $message,
+                    'response' => json_encode($response)
+                ]);
+            }
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();
