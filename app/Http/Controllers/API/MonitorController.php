@@ -37,7 +37,7 @@ class MonitorController extends Controller
     public function checkDomain(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'telegram_chat_id' => 'required|array',
+            'telegram_chat_id' => 'array',
             'domain_list' => 'required|array',
             'domain_list.*.domain' => 'required',
             'domain_list.*.port' => 'required',
@@ -51,7 +51,9 @@ class MonitorController extends Controller
 
         try {
             $domainList = $request->input('domain_list');
-            $telegramChatId = $request->input('telegram_chat_id');
+
+            $telegramChatId = ($request->has('telegram_chat_id') && !empty($request->input('telegram_chat_id')))
+                ? $request->input('telegram_chat_id') : config('monitor.telegram_chat_id');
 
             $message = '';
             foreach ($domainList as $domainItem) {
@@ -81,7 +83,7 @@ class MonitorController extends Controller
     public function checkDb(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'telegram_chat_id' => 'required|array',
+            'telegram_chat_id' => 'array',
         ]);
 
         if ($validator->fails()) {
@@ -91,7 +93,8 @@ class MonitorController extends Controller
         $response = null;
 
         try {
-            $telegramChatId = $request->input('telegram_chat_id');
+            $telegramChatId = ($request->has('telegram_chat_id') && !empty($request->input('telegram_chat_id')))
+                ? $request->input('telegram_chat_id') : config('monitor.telegram_chat_id');
 
             $logs = DB::select('SHOW FULL PROCESSLIST');
             $min_items = ($request->has('min_processlist_item') && !empty($request->input('min_processlist_item')))
@@ -126,7 +129,7 @@ class MonitorController extends Controller
     public function checkDirectory(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'telegram_chat_id' => 'required|array',
+            'telegram_chat_id' => 'array',
             'directory_list' => 'required|array',
             'max_alloc_space_percent' => 'integer',
         ]);
@@ -141,7 +144,10 @@ class MonitorController extends Controller
 
         try {
             $directoryList = $request->input('directory_list');
-            $telegramChatId = $request->input('telegram_chat_id');
+
+            $telegramChatId = ($request->has('telegram_chat_id') && !empty($request->input('telegram_chat_id')))
+                ? $request->input('telegram_chat_id') : config('monitor.telegram_chat_id');
+
             $max_alloc = ($request->has('max_alloc_space_percent') && !empty($request->input('max_alloc_space_percent')))
                 ? $request->input('max_alloc_space_percent') : config('monitor.max_space_alloc_percent');
 
