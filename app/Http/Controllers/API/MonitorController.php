@@ -30,6 +30,41 @@ class MonitorController extends Controller
         $this->telegramBotToken = config('telegram.bots.mybot.token');
     }
 
+    public function sendMessage(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'telegram_chat_id' => 'array',
+            'message' => 'required|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($this->apiResponse->customErrorResponse($validator->errors(), false));
+        }
+
+        $response = null;
+
+        try {
+            $messageList = $request->input('message');
+
+            $telegramChatId = ($request->has('telegram_chat_id') && !empty($request->input('telegram_chat_id')))
+                ? $request->input('telegram_chat_id') : config('monitor.telegram_chat_id');
+
+            foreach ($messageList as $message) {
+                if (!empty($message)) {
+                    $message = strval($message);
+                    $response[] = $this->pushTelegramMessage($request, $telegramChatId, $message);
+                }
+            }
+        } catch (Exception $exception) {
+            $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
+            $error .= $exception->getMessage();
+            Log::error('SendMessage: ' . $error);
+            $response = $error;
+        }
+
+        return response()->json($response);
+    }
+
     /**
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -126,6 +161,10 @@ class MonitorController extends Controller
     }
 
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function checkDirectory(Request $request)
     {
         $validator = Validator::make($request->all(), [
