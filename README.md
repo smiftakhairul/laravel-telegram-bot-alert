@@ -17,10 +17,12 @@ Some configuration need to be updated in the environment `.env` file.
 ```php
 API_KEY=your-api-key
 PROCESSLIST_ITEM_MIN=5
+SPACE_ALLOC_PERCENT_MAX=70
 TELEGRAM_BOT_TOKEN=telegram-bot-token
 ```
 - Set an `API_KEY` for your project to validate every request.
 - Set a minimum limit of Database `PROCESSLIST_ITEM_MIN` by which system can determine whether to send bot alert message or not.
+- Set `SPACE_ALLOC_PERCENT_MAX` by which system can determine whether drive space is used more that it and send bot alert message.
 - Set `TELEGRAM_BOT_TOKEN`. You can create BOT from [here](https://t.me/botfather)
 
 ### Usage
@@ -61,6 +63,7 @@ $response = Http::post('www.example.com/api/monitor/check-directory', [
     'directory_list' => [
         '/var/www/html', '/home', 'D:'
     ],
+    'max_alloc_space_percent' => 70, // Optional
 ]);
 ```
 
