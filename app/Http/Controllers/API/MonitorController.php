@@ -89,7 +89,7 @@ class MonitorController extends Controller
             return response()->json($this->apiResponse->customErrorResponse($validator->errors(), false));
         }
 
-        $response = null;
+        $responseData = null;
 
         try {
             $domainList = $request->input('domain_list');
@@ -104,18 +104,19 @@ class MonitorController extends Controller
                     $message .= $connStatus['message'] . "\n\n";
                 }
             }
-
+            $response = [];
             if (!empty($message)) {
                 $response = $this->pushTelegramMessage($request, $telegramChatId, $message);
             }
+            $responseData = $this->apiResponse->customSuccessResponse('Run successfully',$response);
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();
             Log::error('CheckDomain: ' . $error);
-            $response = $error;
+            $responseData = $this->apiResponse->customErrorResponse($error, false);
         }
 
-        return response()->json($response);
+        return response()->json($responseData);
     }
 
     /**
@@ -133,7 +134,7 @@ class MonitorController extends Controller
         }
 
         $response = null;
-
+        $responseData = null;
         try {
             $telegramChatId = ($request->has('telegram_chat_id') && !empty($request->input('telegram_chat_id')))
                 ? $request->input('telegram_chat_id') : config('monitor.telegram_chat_id');
@@ -141,7 +142,7 @@ class MonitorController extends Controller
             $logs = DB::select('SHOW FULL PROCESSLIST');
             $min_items = ($request->has('min_processlist_item') && !empty($request->input('min_processlist_item')))
                 ? $request->input('min_processlist_item') : config('monitor.min_processlist_item');
-
+            $response['total_processlist'] = $logs;
             if (count($logs) >= $min_items) {
                 $active = 0; $sleep = 0;
                 foreach ($logs as $log) {
@@ -154,17 +155,19 @@ class MonitorController extends Controller
 
                 $message = "PROCESSLIST COMMAND COUNT `active`: $active\nPROCESSLIST COMMAND COUNT `sleep`: $sleep";
                 if (!empty($message)) {
-                    $response = $this->pushTelegramMessage($request, $telegramChatId, $message);
+                    $response['telegram_info'][] = $this->pushTelegramMessage($request, $telegramChatId, $message);
                 }
             }
+            $responseData = $this->apiResponse->customSuccessResponse('Run successfully',$response);
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();
             Log::error('CheckDB: ' . $error);
             $response = $error;
+            $responseData = $this->apiResponse->customErrorResponse($error, false);
         }
 
-        return response()->json($response);
+        return response()->json($responseData);
     }
 
 
@@ -183,7 +186,7 @@ class MonitorController extends Controller
         if ($validator->fails()) {
             return response()->json($this->apiResponse->customErrorResponse($validator->errors(), false));
         }
-
+        $responseData = [];
         date_default_timezone_set('Asia/Dhaka');
 
         $response = null;
@@ -203,19 +206,23 @@ class MonitorController extends Controller
                 if ($spaceStatus['status'] == 'FAILED') {
                     $message .= $spaceStatus['message'] . "\n\n";
                 }
+                $response['space_status_details'][] = $spaceStatus;
             }
 
+
             if (!empty($message)) {
-                $response = $this->pushTelegramMessage($request, $telegramChatId, $message);
+                $response['telegram_info'] = $this->pushTelegramMessage($request, $telegramChatId, $message);
             }
+            $responseData = $this->apiResponse->customSuccessResponse('Run successfully',$response);
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();
             Log::error('CheckSpaceStatus: ' . $error);
             $response = $error;
+            $responseData = $this->apiResponse->customErrorResponse($error,false);
         }
 
-        return response()->json($response);
+        return response()->json($responseData);
     }
 
     /**
