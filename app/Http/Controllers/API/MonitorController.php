@@ -52,17 +52,24 @@ class MonitorController extends Controller
             foreach ($messageList as $message) {
                 if (!empty($message)) {
                     $message = strval($message);
-                    $response[] = $this->pushTelegramMessage($request, $telegramChatId, $message);
+                    $messageResponse = $this->pushTelegramMessage($request, $telegramChatId, $message);
+
+                    if( count($messageResponse) && ! $messageResponse[0]) {
+
+                        throw new \Exception("Failed to send message");
+                    }
+                    $response['telegram_info'][] = $this->pushTelegramMessage($request, $telegramChatId, $message);
                 }
             }
+            return response()->json($this->apiResponse->customSuccessResponse("Message sent succssfully", $response));
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();
             Log::error('SendMessage: ' . $error);
             $response = $error;
+            return response()->json($this->apiResponse->customErrorResponse($response, false));
         }
 
-        return response()->json($response);
     }
 
     /**
@@ -238,6 +245,7 @@ class MonitorController extends Controller
                 $error .= $exception->getMessage();
                 Log::error('PushTelegramMessage: ' . $error);
                 $res = $error;
+                $res = false;
             }
 
             $this->generateTelegramBotLog($telegramBotToken, $telegramChatId, $message, $res);
