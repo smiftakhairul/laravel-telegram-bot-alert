@@ -58,7 +58,7 @@ class MonitorController extends Controller
 
                         throw new \Exception("Failed to send message");
                     }
-                    $response['telegram_info'][] = $this->pushTelegramMessage($request, $telegramChatId, $message);
+                    $response['telegram_info'][] = $messageResponse;
                 }
             }
             return response()->json($this->apiResponse->customSuccessResponse("Message sent succssfully", $response));
