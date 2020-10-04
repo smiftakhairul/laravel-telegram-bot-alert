@@ -43,7 +43,6 @@ class CheckDomain extends Command
             $params['api_key'] = config('monitor.api_key');
 
             $params['domain_list'] = __getAllDomainList();
-            dd($params);
 
             $data = monitoringCurlCall($baseURl.'/api/monitor/check-domain',$params);
 

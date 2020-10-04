@@ -40,7 +40,7 @@ class CheckDirectory extends Command
         try {
             $baseURl = config('app.url');
             $params['api_key'] = config('monitor.api_key');
-            $max_alloc_space_percent = 15;
+            $max_alloc_space_percent = config('monitor.max_space_alloc_percent');
             $params['directory_list'] = __getDirectoryList();
             $params['max_alloc_space_percent'] = $max_alloc_space_percent;
 
