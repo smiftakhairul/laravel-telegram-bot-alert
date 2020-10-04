@@ -272,14 +272,16 @@ class MonitorController extends Controller
     {
         try {
             $monitor_log_enabled = config('monitor.monitor_log_enabled');
+            $inpurArrayData = [
+                'bot_token' => $telegramBotToken,
+                'chat_id' => $telegramChatId,
+                'message' => $message,
+                'response' => json_encode($response)
+            ];
             if ($monitor_log_enabled) {
-                TelegramBotLog::create([
-                    'bot_token' => $telegramBotToken,
-                    'chat_id' => $telegramChatId,
-                    'message' => $message,
-                    'response' => json_encode($response)
-                ]);
+                TelegramBotLog::create($inpurArrayData);
             }
+            Log::info("TelegramBotLog : ". json_encode($inpurArrayData));
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();
