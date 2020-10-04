@@ -40,12 +40,8 @@ class CheckDirectory extends Command
         try {
             $baseURl = config('app.url');
             $params['api_key'] = config('monitor.api_key');
-            $directory_list[] = '/var/www/html';
-            $directory_list[] = '/var/log';
-            $directory_list[] = '/home';
-
             $max_alloc_space_percent = 15;
-            $params['directory_list'] = $directory_list;
+            $params['directory_list'] = __getDirectoryList();
             $params['max_alloc_space_percent'] = $max_alloc_space_percent;
 
             $data = monitoringCurlCall($baseURl.'/api/monitor/check-directory',$params);

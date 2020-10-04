@@ -43,7 +43,8 @@
             "database/factories"
         ],
         "files": [
-            "app/helpers.php"
+            "app/helpers.php",
+            "app/Conf/monitorData.php"
         ]
     },
     "autoload-dev": {

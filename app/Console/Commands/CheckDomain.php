@@ -41,15 +41,9 @@ class CheckDomain extends Command
         try {
             $baseURl = config('app.url');
             $params['api_key'] = config('monitor.api_key');
-            $domainList[] = [
-                'domain' => 'api.nagad.com',
-                'port' => '8808'
-            ];
-            $domainList[] = [
-                'domain' => 'api2.nagad.com',
-                'port' => '8809'
-            ];
-            $params['domain_list'] = $domainList;
+
+            $params['domain_list'] = __getAllDomainList();
+            dd($params);
 
             $data = monitoringCurlCall($baseURl.'/api/monitor/check-domain',$params);
 
