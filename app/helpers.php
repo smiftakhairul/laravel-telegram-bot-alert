@@ -23,6 +23,7 @@ if (!function_exists('monitoringCurlCall')) {
 
 
             curl_close($handle);
+            \Illuminate\Support\Facades\Log::info('Curl Response : '.json_encode($content));
             if ($code == 200 && !($error)) {
 
                 return $content;
@@ -30,6 +31,7 @@ if (!function_exists('monitoringCurlCall')) {
                 return false;
             }
         }catch (\Exception $exception) {
+            \Illuminate\Support\Facades\Log::error('curl call exception :'. $exception->getMessage().' file no : ' .$exception->getFile());
             return false;
         }
 
