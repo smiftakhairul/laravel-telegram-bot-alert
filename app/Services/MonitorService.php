@@ -36,7 +36,7 @@ class MonitorService
         }
 
         $message = [];
-        $waitTimeoutInSeconds = 1;
+        $waitTimeoutInSeconds = 3;
 
         try {
             if ($fp = fsockopen($domainIp, $domainPort, $errCode, $errStr, $waitTimeoutInSeconds)) {
