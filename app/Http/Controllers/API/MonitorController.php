@@ -52,17 +52,24 @@ class MonitorController extends Controller
             foreach ($messageList as $message) {
                 if (!empty($message)) {
                     $message = strval($message);
-                    $response[] = $this->pushTelegramMessage($request, $telegramChatId, $message);
+                    $messageResponse = $this->pushTelegramMessage($request, $telegramChatId, $message, true);
+
+                    if( count($messageResponse) && ! $messageResponse[0]) {
+
+                        throw new \Exception("Failed to send message");
+                    }
+                    $response['telegram_info'][] = $messageResponse;
                 }
             }
+            return response()->json($this->apiResponse->customSuccessResponse("Message sent succssfully", $response));
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();
             Log::error('SendMessage: ' . $error);
             $response = $error;
+            return response()->json($this->apiResponse->customErrorResponse($response, false));
         }
 
-        return response()->json($response);
     }
 
     /**
@@ -82,7 +89,7 @@ class MonitorController extends Controller
             return response()->json($this->apiResponse->customErrorResponse($validator->errors(), false));
         }
 
-        $response = null;
+        $responseData = null;
 
         try {
             $domainList = $request->input('domain_list');
@@ -97,18 +104,19 @@ class MonitorController extends Controller
                     $message .= $connStatus['message'] . "\n\n";
                 }
             }
-
+            $response = [];
             if (!empty($message)) {
                 $response = $this->pushTelegramMessage($request, $telegramChatId, $message);
             }
+            $responseData = $this->apiResponse->customSuccessResponse('Run successfully',$response);
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();
             Log::error('CheckDomain: ' . $error);
-            $response = $error;
+            $responseData = $this->apiResponse->customErrorResponse($error, false);
         }
 
-        return response()->json($response);
+        return response()->json($responseData);
     }
 
     /**
@@ -126,7 +134,7 @@ class MonitorController extends Controller
         }
 
         $response = null;
-
+        $responseData = null;
         try {
             $telegramChatId = ($request->has('telegram_chat_id') && !empty($request->input('telegram_chat_id')))
                 ? $request->input('telegram_chat_id') : config('monitor.telegram_chat_id');
@@ -134,11 +142,11 @@ class MonitorController extends Controller
             $logs = DB::select('SHOW FULL PROCESSLIST');
             $min_items = ($request->has('min_processlist_item') && !empty($request->input('min_processlist_item')))
                 ? $request->input('min_processlist_item') : config('monitor.min_processlist_item');
-
+            $response['total_processlist'] = $logs;
             if (count($logs) >= $min_items) {
                 $active = 0; $sleep = 0;
                 foreach ($logs as $log) {
-                    if ($log->Command == strtoupper('SLEEP')) {
+                    if (strtoupper($log->Command) == 'SLEEP') {
                         $sleep++;
                     } else {
                         $active++;
@@ -147,17 +155,19 @@ class MonitorController extends Controller
 
                 $message = "PROCESSLIST COMMAND COUNT `active`: $active\nPROCESSLIST COMMAND COUNT `sleep`: $sleep";
                 if (!empty($message)) {
-                    $response = $this->pushTelegramMessage($request, $telegramChatId, $message);
+                    $response['telegram_info'][] = $this->pushTelegramMessage($request, $telegramChatId, $message);
                 }
             }
+            $responseData = $this->apiResponse->customSuccessResponse('Run successfully',$response);
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();
             Log::error('CheckDB: ' . $error);
             $response = $error;
+            $responseData = $this->apiResponse->customErrorResponse($error, false);
         }
 
-        return response()->json($response);
+        return response()->json($responseData);
     }
 
 
@@ -176,7 +186,7 @@ class MonitorController extends Controller
         if ($validator->fails()) {
             return response()->json($this->apiResponse->customErrorResponse($validator->errors(), false));
         }
-
+        $responseData = [];
         date_default_timezone_set('Asia/Dhaka');
 
         $response = null;
@@ -196,19 +206,23 @@ class MonitorController extends Controller
                 if ($spaceStatus['status'] == 'FAILED') {
                     $message .= $spaceStatus['message'] . "\n\n";
                 }
+                $response['space_status_details'][] = $spaceStatus;
             }
 
+
             if (!empty($message)) {
-                $response = $this->pushTelegramMessage($request, $telegramChatId, $message);
+                $response['telegram_info'] = $this->pushTelegramMessage($request, $telegramChatId, $message);
             }
+            $responseData = $this->apiResponse->customSuccessResponse('Run successfully',$response);
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();
             Log::error('CheckSpaceStatus: ' . $error);
             $response = $error;
+            $responseData = $this->apiResponse->customErrorResponse($error,false);
         }
 
-        return response()->json($response);
+        return response()->json($responseData);
     }
 
     /**
@@ -217,13 +231,19 @@ class MonitorController extends Controller
      * @param $message
      * @return array
      */
-    protected function pushTelegramMessage(Request $request, array $telegramChatIds, $message)
+    protected function pushTelegramMessage(Request $request, array $telegramChatIds, $message, bool $is_general = false)
     {
         $response = [];
         $telegramBotToken = null;
 
         $telegramBotToken = ($request->has('telegram_bot_token') && !empty($request->input('telegram_bot_token')))
             ? $request->input('telegram_bot_token') : $this->telegramBotToken;
+
+        if (!$is_general) {
+            $messagePrefixTitle = ($request->has('title') && !empty($request->input('title')))
+                ? $request->input('title') : config('monitor.app_title');
+            $message = 'Title: ' . $messagePrefixTitle . "\n" . $message;
+        }
 
         foreach ($telegramChatIds as $telegramChatId) {
             try {
@@ -238,6 +258,7 @@ class MonitorController extends Controller
                 $error .= $exception->getMessage();
                 Log::error('PushTelegramMessage: ' . $error);
                 $res = $error;
+                $res = false;
             }
 
             $this->generateTelegramBotLog($telegramBotToken, $telegramChatId, $message, $res);
@@ -257,14 +278,16 @@ class MonitorController extends Controller
     {
         try {
             $monitor_log_enabled = config('monitor.monitor_log_enabled');
+            $inpurArrayData = [
+                'bot_token' => $telegramBotToken,
+                'chat_id' => $telegramChatId,
+                'message' => $message,
+                'response' => json_encode($response)
+            ];
             if ($monitor_log_enabled) {
-                TelegramBotLog::create([
-                    'bot_token' => $telegramBotToken,
-                    'chat_id' => $telegramChatId,
-                    'message' => $message,
-                    'response' => json_encode($response)
-                ]);
+                TelegramBotLog::create($inpurArrayData);
             }
+            Log::info("TelegramBotLog : ". json_encode($inpurArrayData));
         } catch (Exception $exception) {
             $error = '[' . $exception->getCode() . ', ' . $exception->getFile() . ', ' . $exception->getLine() . ']: ';
             $error .= $exception->getMessage();

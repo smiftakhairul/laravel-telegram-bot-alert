@@ -31,8 +31,8 @@ class CustomAPIResponse
     {
         $message = empty($key) ? $message : [$key => $message];
         return [
-            'status' => $this->success->status,
-            'code' => $this->success->code,
+            'status' =>  $this->error->status,
+            'code' => $this->error->code,
             'success' => false,
             'validated' => $validated,
             'data' => [],
