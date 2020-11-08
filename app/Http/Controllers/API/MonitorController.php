@@ -52,7 +52,7 @@ class MonitorController extends Controller
             foreach ($messageList as $message) {
                 if (!empty($message)) {
                     $message = strval($message);
-                    $messageResponse = $this->pushTelegramMessage($request, $telegramChatId, $message);
+                    $messageResponse = $this->pushTelegramMessage($request, $telegramChatId, $message, true);
 
                     if( count($messageResponse) && ! $messageResponse[0]) {
 
@@ -146,7 +146,7 @@ class MonitorController extends Controller
             if (count($logs) >= $min_items) {
                 $active = 0; $sleep = 0;
                 foreach ($logs as $log) {
-                    if ($log->Command == strtoupper('SLEEP')) {
+                    if (strtoupper($log->Command) == 'SLEEP') {
                         $sleep++;
                     } else {
                         $active++;
@@ -231,13 +231,19 @@ class MonitorController extends Controller
      * @param $message
      * @return array
      */
-    protected function pushTelegramMessage(Request $request, array $telegramChatIds, $message)
+    protected function pushTelegramMessage(Request $request, array $telegramChatIds, $message, bool $is_general = false)
     {
         $response = [];
         $telegramBotToken = null;
 
         $telegramBotToken = ($request->has('telegram_bot_token') && !empty($request->input('telegram_bot_token')))
             ? $request->input('telegram_bot_token') : $this->telegramBotToken;
+
+        if (!$is_general) {
+            $messagePrefixTitle = ($request->has('title') && !empty($request->input('title')))
+                ? $request->input('title') : config('monitor.app_title');
+            $message = 'Title: ' . $messagePrefixTitle . "\n" . $message;
+        }
 
         foreach ($telegramChatIds as $telegramChatId) {
             try {
